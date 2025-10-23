@@ -1,9 +1,9 @@
 from flask import Flask, request
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
-# Dictionnaire pour stocker la dernière commande par appareil
 commandes = {}
 
 @app.route("/")
@@ -12,7 +12,6 @@ def home():
 
 @app.route("/set", methods=["GET", "POST"])
 def set_cmd():
-    """Reçoit une commande depuis Automate"""
     device = request.args.get("device", "default")
     cmd = request.args.get("cmd", "")
     if not cmd:
@@ -22,14 +21,15 @@ def set_cmd():
 
 @app.route("/get")
 def get_cmd():
-    """Renvoie la commande au bon ESP32"""
     device = request.args.get("device", "default")
     if device in commandes:
         cmd = commandes[device]["cmd"]
-        commandes.pop(device)  # efface après lecture
+        commandes.pop(device)
         return cmd
-    return ""  # pas de commande à exécuter
+    return ""
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))  # Render fournit le port ici
+    app.run(host="0.0.0.0", port=port)
+
 
